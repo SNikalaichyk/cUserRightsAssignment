@@ -1,0 +1,62 @@
+#---------------------------------#
+#      environment configuration  #
+#---------------------------------#
+os: WMF 5
+version: 1.0.{build}.0
+install:
+  - cinst -y pester
+  - git clone https://github.com/PowerShell/DscResource.Tests
+  - ps: Push-Location
+  - cd DscResource.Tests
+  - ps: Import-Module .\TestHelper.psm1 -Force
+  - ps: Pop-Location
+  - ps: Get-PackageProvider -Name nuget -ForceBootStrap -Force
+
+#---------------------------------#
+#      build configuration        #
+#---------------------------------#
+
+build: false
+
+#---------------------------------#
+#      test configuration         #
+#---------------------------------#
+
+test_script:
+    - ps: |
+        $testResultsFile = ".\TestsResults.xml"
+        $res = Invoke-Pester -OutputFormat NUnitXml -OutputFile $testResultsFile -PassThru
+        (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testResultsFile))
+        if ($res.FailedCount -gt 0) {
+            throw "$($res.FailedCount) tests failed."
+        }
+
+#---------------------------------#
+#      deployment configuration   #
+#---------------------------------#
+
+# scripts to run before deployment
+deploy_script:
+  - ps: |
+      # Creating project artifact
+      $stagingDirectory = (Resolve-Path ..).Path
+      $manifest = Join-Path $pwd "xWebAdministration.psd1"
+      (Get-Content $manifest -Raw).Replace("1.0.0.0", $env:APPVEYOR_BUILD_VERSION) | Out-File $manifest
+      $zipFilePath = Join-Path $stagingDirectory "$(Split-Path $pwd -Leaf).zip"
+      Add-Type -assemblyname System.IO.Compression.FileSystem
+      [System.IO.Compression.ZipFile]::CreateFromDirectory($pwd, $zipFilePath)
+
+      # Creating NuGet package artifact
+      New-Nuspec -packageName $env:APPVEYOR_PROJECT_NAME -version $env:APPVEYOR_BUILD_VERSION -author "Serge Nikalaichyk" -owners "Serge Nikalaichyk" -licenseUrl "https://github.com/SNikalaichyk/cUserRightsAssignment/blob/master/LICENSE" -projectUrl "https://github.com/$($env:APPVEYOR_REPO_NAME)" -packageDescription $env:APPVEYOR_PROJECT_NAME -tags "AccessControl DesiredStateConfiguration DSC LogonRight Privilege PSModule" -destinationPath .
+      nuget pack ".\$($env:APPVEYOR_PROJECT_NAME).nuspec" -outputdirectory .
+      $nuGetPackageName = $env:APPVEYOR_PROJECT_NAME + "." + $env:APPVEYOR_BUILD_VERSION + ".nupkg"
+      $nuGetPackagePath = (Get-ChildItem $nuGetPackageName).FullName
+
+      @(
+          # You can add other artifacts here
+          $zipFilePath,
+          $nuGetPackagePath
+      ) | ForEach-Object {
+          Write-Host "Pushing package $_ as AppVeyor artifact"
+          Push-AppVeyorArtifact $_
+        }
