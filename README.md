@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/2povou5660b4ol7v/branch/master?svg=true)](https://ci.appveyor.com/project/SNikalaichyk/cuserrightsassignment/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/wd1lvxj75hrvbfp7/branch/master?svg=true)](https://ci.appveyor.com/project/SNikalaichyk/cuserrightsassignment/branch/master)
 
 # cUserRightsAssignment
 The **cUserRightsAssignment** module contains the **cUserRight** DSC resource that provides a mechanism to manage user rights: logon rights and privileges.
