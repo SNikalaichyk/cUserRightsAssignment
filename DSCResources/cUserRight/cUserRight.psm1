@@ -75,9 +75,9 @@ function Get-TargetResource
     )
 
     $UserRights = [String[]]@(
-            Get-UserRight -Principal $Principal |
-            Select-Object -ExpandProperty UserRights
-        )
+        Get-UserRight -Principal $Principal |
+        Select-Object -ExpandProperty UserRights
+    )
 
     if ($UserRights -contains $Constant)
     {
@@ -89,10 +89,10 @@ function Get-TargetResource
     }
 
     $ReturnValue = @{
-            Ensure    = $EnsureResult
-            Constant  = $Constant
-            Principal = $Principal
-        }
+        Ensure = $EnsureResult
+        Constant = $Constant
+        Principal = $Principal
+    }
 
     return $ReturnValue
 }
@@ -665,11 +665,11 @@ function Get-UserRight
     Write-Verbose -Message ($LocalizedData.VerboseGetUserRight -f $Principal)
 
     $OutputObject = [PSCustomObject]@{
-            Principal  = $Principal
-            UserRights = [String[]]@(
-                    [cUserRight.Lsa]::EnumerateAccountRights($Principal)
-                )
-        }
+        Principal = $Principal
+        UserRights = [String[]]@(
+            [cUserRight.Lsa]::EnumerateAccountRights($Principal)
+        )
+    }
 
     return $OutputObject
 }

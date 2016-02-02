@@ -1,28 +1,28 @@
+<#
+.SYNOPSIS
+    Granularly assign user rights.
+.DESCRIPTION
+    This example shows how to use the cUserRight DSC resource to granularly assign user rights.
+#>
 
-configuration Sample_cUserRight
+Configuration Sample_cUserRight
 {
-    param
-    (
-        [String[]]$ComputerName = 'localhost'
-    )
-
     Import-DscResource -ModuleName cUserRightsAssignment
 
-    node $ComputerName
+    # Ensure the 'Log on as a service' user right is assigned to the local 'Power Users' group.
+    cUserRight GrantServiceLogonRight
     {
-        cUserRight BatchLogonRight
-        {
-            Ensure    = 'Present'
-            Constant  = 'SeBatchLogonRight'
-            Principal = 'BUILTIN\Power Users'
-        }
+        Ensure = 'Present'
+        Constant = 'SeServiceLogonRight'
+        Principal = 'BUILTIN\Power Users'
+    }
 
-        cUserRight ServiceLogonRight
-        {
-            Ensure    = 'Present'
-            Constant  = 'SeServiceLogonRight'
-            Principal = 'BUILTIN\Power Users'
-        }
+    # Ensure the 'Log on as a batch job' user right is not assigned to the local 'Power Users' group.
+    cUserRight RevokeBatchLogonRight
+    {
+        Ensure = 'Absent'
+        Constant = 'SeBatchLogonRight'
+        Principal = 'BUILTIN\Power Users'
     }
 }
 
