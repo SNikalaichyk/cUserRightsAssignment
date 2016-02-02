@@ -24,31 +24,26 @@ build: false
 #---------------------------------#
 
 test_script:
-  - ps: |
-    $TestResultsFilePath = '.\TestsResults.xml'
-    $TestResults = Invoke-Pester -OutputFormat NUnitXml -OutputFile $TestResultsFilePath -PassThru
-
-    (New-Object -TypeName System.Net.WebClient).UploadFile(
-        "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",
-        (Resolve-Path -Path $TestResultsFilePath))
-
-    if ($TestResults.FailedCount -gt 0) {throw "$($TestResults.FailedCount) tests failed."}
+    - ps: |
+        $TestResultsFilePath = '.\TestsResults.xml'
+        $TestResults = Invoke-Pester -OutputFormat NUnitXml -OutputFile $TestResultsFilePath -PassThru
+        (New-Object -TypeName System.Net.WebClient).UploadFile(
+            "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",
+            (Resolve-Path -Path $TestResultsFilePath))
+        if ($TestResults.FailedCount -gt 0) {throw "$($TestResults.FailedCount) tests failed."}
 
 #---------------------------------#
 #      deployment configuration   #
 #---------------------------------#
 
 deploy_script:
-  - ps: |
-    $ManifestFileName = 'cUserRightsAssignment.psd1'
-
-    $StagingDirectoryPath = (Resolve-Path -Path '..').Path
-    $ManifestFilePath = Join-Path -Path $PWD -ChildPath $ManifestFileName
-
-    (Get-Content -Path $ManifestFilePath) -replace "(ModuleVersion\s*?=\s*?['|`"])(.*?)(['|`"])", ('${1}' + $env:APPVEYOR_BUILD_VERSION + '${3}') |
-    Set-Content -Path $ManifestFilePath
-
-    $ZipFilePath = Join-Path -Path $StagingDirectoryPath -ChildPath "$(Split-Path -Path $PWD -Leaf).zip"
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::CreateFromDirectory($PWD, $ZipFilePath)
-    Push-AppVeyorArtifact -Path $ZipFilePath
+    - ps: |
+        $ManifestFileName = 'cUserRightsAssignment.psd1'
+        $StagingDirectoryPath = (Resolve-Path -Path '..').Path
+        $ManifestFilePath = Join-Path -Path $PWD -ChildPath $ManifestFileName
+        (Get-Content -Path $ManifestFilePath) -replace "(ModuleVersion\s*?=\s*?['|`"])(.*?)(['|`"])", ('${1}' + $env:APPVEYOR_BUILD_VERSION + '${3}') |
+        Set-Content -Path $ManifestFilePath
+        $ZipFilePath = Join-Path -Path $StagingDirectoryPath -ChildPath "$(Split-Path -Path $PWD -Leaf).zip"
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($PWD, $ZipFilePath)
+        Push-AppVeyorArtifact -Path $ZipFilePath
