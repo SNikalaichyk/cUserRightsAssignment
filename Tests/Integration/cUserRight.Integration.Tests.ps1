@@ -1,21 +1,28 @@
-$Global:DSCModuleName   = 'cUserRightsAssignment'
+#requires -Version 4.0 -Modules Pester
+
+$Global:DSCModuleName = 'cUserRightsAssignment'
 $Global:DSCResourceName = 'cUserRight'
 
-#region HEADER
-if ( (-not (Test-Path -Path '.\DSCResource.Tests\')) -or `
-     (-not (Test-Path -Path '.\DSCResource.Tests\TestHelper.psm1')) )
+#region Header
+
+$ModuleRoot = Split-Path -Path $Script:MyInvocation.MyCommand.Path -Parent | Split-Path -Parent | Split-Path -Parent
+
+if (
+    (-not (Test-Path -Path (Join-Path -Path $ModuleRoot -ChildPath 'DSCResource.Tests') -PathType Container)) -or
+    (-not (Test-Path -Path (Join-Path -Path $ModuleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -PathType Leaf))
+)
 {
-    & git @('clone','https://github.com/PowerShell/DscResource.Tests.git')
+    & git @('clone', 'https://github.com/PowerShell/DscResource.Tests.git', (Join-Path -Path $ModuleRoot -ChildPath 'DSCResource.Tests'))
 }
 else
 {
-    & git @('-C',(Join-Path -Path (Get-Location) -ChildPath '\DSCResource.Tests\'),'pull')
+    & git @('-C', (Join-Path -Path $ModuleRoot -ChildPath 'DSCResource.Tests'), 'pull')
 }
-Import-Module .\DSCResource.Tests\TestHelper.psm1 -Force
-$TestEnvironment = Initialize-TestEnvironment `
-    -DSCModuleName $Global:DSCModuleName `
-    -DSCResourceName $Global:DSCResourceName `
-    -TestType Integration
+
+Import-Module -Name (Join-Path -Path $ModuleRoot -ChildPath 'DSCResource.Tests\TestHelper.psm1') -Force
+
+$TestEnvironment = Initialize-TestEnvironment -DSCModuleName $Global:DSCModuleName -DSCResourceName $Global:DSCResourceName -TestType Integration
+
 #endregion
 
 # Begin Testing
@@ -40,15 +47,17 @@ try
         }
 
         It 'Should be able to call Get-DscConfiguration without throwing' {
-            {Get-DscConfiguration -Verbose -ErrorAction Stop} | Should Not Throw
+            {
+                Get-DscConfiguration -Verbose -ErrorAction Stop
+            } | Should Not Throw
         }
 
         #endregion
 
         It 'Should have set the resource and all the parameters should match' {
             $Current = Get-DscConfiguration | Where-Object {$_.ConfigurationName -eq $ConfigurationName}
-            $Current.Ensure    | Should Be 'Present'
-            $Current.Constant  | Should Be $TestParameters.Constant
+            $Current.Ensure | Should Be 'Present'
+            $Current.Constant | Should Be $TestParameters.Constant
             $Current.Principal | Should Be $TestParameters.Principal
         }
 
@@ -68,15 +77,17 @@ try
         }
 
         It 'Should be able to call Get-DscConfiguration without throwing' {
-            {Get-DscConfiguration -Verbose -ErrorAction Stop} | Should Not Throw
+            {
+                Get-DscConfiguration -Verbose -ErrorAction Stop
+            } | Should Not Throw
         }
 
         #endregion
 
         It 'Should have set the resource and all the parameters should match' {
             $Current = Get-DscConfiguration | Where-Object {$_.ConfigurationName -eq $ConfigurationName}
-            $Current.Ensure    | Should Be 'Absent'
-            $Current.Constant  | Should Be $TestParameters.Constant
+            $Current.Ensure | Should Be 'Absent'
+            $Current.Constant | Should Be $TestParameters.Constant
             $Current.Principal | Should Be $TestParameters.Principal
         }
 
@@ -86,7 +97,9 @@ try
 }
 finally
 {
-    #region FOOTER
+    #region Footer
+
     Restore-TestEnvironment -TestEnvironment $TestEnvironment
+
     #endregion
 }

@@ -1,33 +1,33 @@
 $TestParameters = [PSCustomObject]@{
-    Constant  = 'SeBatchLogonRight'
+    Constant = 'SeBatchLogonRight'
     Principal = 'BUILTIN\Power Users'
 }
 
-configuration cUserRight_Present
+Configuration cUserRight_Present
 {
     Import-DscResource -ModuleName cUserRightsAssignment
 
-    node localhost
+    Node localhost
     {
-        cUserRight UserRight
+        cUserRight TestPresent
         {
-            Ensure    = 'Present'
-            Constant  = $TestParameters.Constant
+            Ensure = 'Present'
+            Constant = $TestParameters.Constant
             Principal = $TestParameters.Principal
         }
     }
 }
 
-configuration cUserRight_Absent
+Configuration cUserRight_Absent
 {
     Import-DscResource -ModuleName cUserRightsAssignment
 
-    node localhost
+    Node localhost
     {
-        cUserRight UserRight
+        cUserRight TestAbsent
         {
-            Ensure    = 'Absent'
-            Constant  = $TestParameters.Constant
+            Ensure = 'Absent'
+            Constant = $TestParameters.Constant
             Principal = $TestParameters.Principal
         }
     }

@@ -261,8 +261,6 @@ function Set-TargetResource
     }
 }
 
-Export-ModuleMember -Function *-TargetResource
-
 #region Helper Functions
 
 function Initialize-CustomType

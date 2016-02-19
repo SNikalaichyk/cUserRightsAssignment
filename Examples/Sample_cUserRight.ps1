@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    Granularly assign user rights.
+    Assign logon rights.
 .DESCRIPTION
-    This example shows how to use the cUserRight DSC resource to granularly assign user rights.
+    This example shows how to use the cUserRight DSC resource to assign logon rights.
 #>
 
 Configuration Sample_cUserRight
 {
     Import-DscResource -ModuleName cUserRightsAssignment
 
-    # Ensure the 'Log on as a service' user right is assigned to the local 'Power Users' group.
+    # Ensure the 'Log on as a service' logon right is assigned to the local 'Power Users' group.
     cUserRight GrantServiceLogonRight
     {
         Ensure = 'Present'
@@ -17,7 +17,7 @@ Configuration Sample_cUserRight
         Principal = 'BUILTIN\Power Users'
     }
 
-    # Ensure the 'Log on as a batch job' user right is not assigned to the local 'Power Users' group.
+    # Ensure the 'Log on as a batch job' logon right is not assigned to the local 'Power Users' group.
     cUserRight RevokeBatchLogonRight
     {
         Ensure = 'Absent'
@@ -26,8 +26,6 @@ Configuration Sample_cUserRight
     }
 }
 
-Sample_cUserRight -OutputPath "$Env:SystemDrive\Sample_cUserRight"
-
-Start-DscConfiguration -Path "$Env:SystemDrive\Sample_cUserRight" -Force -Verbose -Wait
-
-Get-DscConfiguration
+$OutputPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'Sample_cUserRight'
+Sample_cUserRight -OutputPath $OutputPath
+Start-DscConfiguration -Path $OutputPath -Force -Verbose -Wait
