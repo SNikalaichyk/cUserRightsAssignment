@@ -7,7 +7,7 @@ You can also download this module from the [PowerShell Gallery](https://www.powe
 
 ## Resources
 
-###cUserRight
+### cUserRight
 
 The **cUserRight** DSC resource provides a mechanism to manage user rights: logon rights and privileges.
 
